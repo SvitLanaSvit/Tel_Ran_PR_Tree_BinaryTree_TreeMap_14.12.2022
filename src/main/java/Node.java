@@ -30,13 +30,13 @@ public class Node {
     private static Node search(Node node, int value) {
         if (isNotExists(node)) {
             return null;
-        } else if (value == node.value) {
+        }
+        if (node.value == value) {
             return node;
         }
         if (value < node.value) {
-            search(node.left, value);
+            return search(node.left, value);
         }
-
         return search(node.right, value);
     }
 
@@ -52,14 +52,14 @@ public class Node {
         return getMax(node.right);
     }
 
-    private static void inOrderTraversal(Node node) { //simetrichnyj
+    private static void inOrderTraversal(Node node) { //symmetric
         if (isNotExists(node)) return;
         inOrderTraversal(node.left);
         System.out.print(node.value + "->");
         inOrderTraversal(node.right);
     }
 
-    private static void postOrderTraversal(Node node) { //zvorotnij
+    private static void postOrderTraversal(Node node) { //inverted
         if(isNotExists(node)){
             return;
         }
@@ -68,7 +68,7 @@ public class Node {
         System.out.print(node.value + "->");
     }
 
-    private static void directOrderTraversal(Node node) { //prjamyj
+    private static void directOrderTraversal(Node node) { //direct
         if(isNotExists(node)){
             return;
         }
@@ -77,12 +77,13 @@ public class Node {
         directOrderTraversal(node.right);
     }
 
-    //todo class
     private static void moveNode(Node toNode, Node fromNode) {
-
+        toNode.value = fromNode.value;
+        toNode.left = fromNode.left;
+        toNode.right = fromNode.right;
     }
 
-    private static int getChildrenCount(Node node) {
+    private static int getSize(Node node){
         if (isNotExists(node))
             return 0;
 
@@ -111,20 +112,45 @@ public class Node {
                 queue.add(temp.right);
             }
         }
-        return count - 1;
-    }
-    private static boolean remove(Node node, int value){
-        if(!isNotExists(node)) {
-            return isNotExists(delete(node, value));
-        }
-        return false;
+        return count;
     }
 
-    private static Node delete(Node node, int value){
-        if(node.left == null && node.right == null){
-            return null;
+    private static int getChildrenCount(Node node) {
+        int count = 0;
+        if (!isNotExists(node.left)) {
+            count += 1;
         }
-        return null;
+        if (!isNotExists(node.right)) {
+            count += 1;
+        }
+        return count;
+    }
+
+    private static boolean remove(Node root, int value){
+        Node nodeToDelete = search(root, value);
+        if(isNotExists(nodeToDelete)) {
+            return false;
+        }
+        int childrenCount = getChildrenCount(nodeToDelete);
+        if(childrenCount < 2) {
+            removeNodeWithOneOrChildWithoutChildren(nodeToDelete);
+        }
+        else{
+            Node minNode = getMin(nodeToDelete.right);
+            assert minNode != null;
+            nodeToDelete.value = minNode.value;
+            removeNodeWithOneOrChildWithoutChildren(minNode);
+        }
+        return true;
+    }
+
+    private static void removeNodeWithOneOrChildWithoutChildren(Node nodeToDelete){
+        Node childOrNull = getChildOrNull(nodeToDelete);
+        moveNode(nodeToDelete, childOrNull);
+    }
+
+    private static Node getChildOrNull(Node node){
+        return isNotExists(node.left) ? node.right : node.left;
     }
 
     public static void main(String[] args) {
@@ -143,12 +169,14 @@ public class Node {
         System.out.println("Count all children of node: " + getChildrenCount(node));
         Node nodeMin = getMin(node);
         assert nodeMin != null;
-        System.out.println(nodeMin.value);
+        System.out.println("Min : " + nodeMin.value);
         Node nodeMax = getMax(node);
         assert nodeMax != null;
-        System.out.println(nodeMax.value);
-        //remove(node, 10);
+        System.out.println("Max : " + nodeMax.value);
+        remove(node, 10);
+        inOrderTraversal(node);
         System.out.println();
-        //inOrderTraversal(node);
+        int searchVal = 5;
+        System.out.println("Address of search Node by value '" + searchVal + "': " + search(node, searchVal));
     }
 }
